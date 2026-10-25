@@ -23,8 +23,6 @@ TriageMate takes a raw, messy bug report and produces a structured triage card: 
 
 > Built through **vibe coding with IBM Bob**, using a 6-layer prompt and several refinement iterations.
 
-![TriageMate screenshot](screenshots/triage-card.png)
-
 ## ⚡ Quick Start
 
 1. Clone the repo: `git clone https://github.com/<username>/hacktiv8-triagemate-bug-triage-agent.git`
