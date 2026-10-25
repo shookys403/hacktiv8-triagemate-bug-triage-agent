@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="TriageMate — rule-based AI agent that triages raw bug reports into structured, prioritized triage cards." />
+  <title>TriageMate — AI Bug Triage Agent</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header" role="banner">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">🐛</span>
+        <h1 class="brand-name">TriageMate</h1>
+        <span class="brand-tagline" data-i18n="tagline">AI Bug Triage Agent</span>
+      </div>
+
+      <div class="header-controls">
+        <!-- Language switcher -->
+        <div class="lang-switcher" role="group" aria-label="Language / Bahasa">
+          <button id="langEN" class="lang-btn" aria-pressed="true"  data-lang="en">EN</button>
+          <button id="langID" class="lang-btn" aria-pressed="false" data-lang="id">ID</button>
+        </div>
+
+        <!-- Dark / Light toggle -->
+        <button
+          id="themeToggle"
+          class="btn btn-icon"
+          aria-label="Toggle dark mode"
+          aria-pressed="false"
+          title="Toggle dark / light theme"
+        >
+          <span class="icon-sun"  aria-hidden="true">☀️</span>
+          <span class="icon-moon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main-layout" id="main">
+
+    <!-- LEFT COLUMN: input -->
+    <section class="panel panel-input" aria-labelledby="inputHeading">
+      <h2 id="inputHeading" class="panel-heading" data-i18n="inputHeading">Paste Bug Report</h2>
+
+      <label for="reportInput" class="sr-only" data-i18n="inputLabel">Raw bug report text</label>
+      <textarea
+        id="reportInput"
+        class="report-textarea"
+        aria-label="Raw bug report text"
+        aria-describedby="inputHint"
+        rows="13"
+        spellcheck="true"
+        maxlength="20000"
+      ></textarea>
+      <p id="inputHint" class="input-hint" data-i18n="inputHint">
+        Max 20 000 characters. Supports English and Indonesian.
+      </p>
+
+      <div class="input-actions">
+        <button id="triageBtn" class="btn btn-primary" aria-live="polite">
+          <span class="btn-label" data-i18n="triageBtn">Triage Report</span>
+          <span class="btn-spinner" aria-hidden="true" hidden>⟳</span>
+        </button>
+        <button id="clearInputBtn" class="btn btn-ghost" aria-label="Clear input" data-i18n="clearBtn">
+          Clear
+        </button>
+      </div>
+
+      <!-- Sample Reports -->
+      <details class="samples-wrapper" open>
+        <summary data-i18n="samplesTitle">Sample Reports (click to load)</summary>
+        <ul class="sample-list" role="list">
+          <li>
+            <button class="btn btn-sample" data-sample="critical" data-i18n-aria="sampleCriticalAria">
+              🔴 <span data-i18n="sampleCritical">Critical — Security</span>
+            </button>
+          </li>
+          <li>
+            <button class="btn btn-sample" data-sample="medium" data-i18n-aria="sampleMediumAria">
+              🟡 <span data-i18n="sampleMedium">Medium — Performance</span>
+            </button>
+          </li>
+          <li>
+            <button class="btn btn-sample" data-sample="low" data-i18n-aria="sampleLowAria">
+              🟢 <span data-i18n="sampleLow">Low — UI</span>
+            </button>
+          </li>
+          <li>
+            <button class="btn btn-sample" data-sample="id_medium" data-i18n-aria="sampleIdAria">
+              🟡 <span data-i18n="sampleId">Medium — Login (Indonesian)</span>
+            </button>
+          </li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- RIGHT COLUMN: result card -->
+    <section class="panel panel-result" aria-labelledby="resultHeading" aria-live="polite" aria-atomic="true">
+      <h2 id="resultHeading" class="panel-heading" data-i18n="resultHeading">Triage Card</h2>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="state-card state-empty" role="status">
+        <span class="state-icon" aria-hidden="true">📋</span>
+        <p data-i18n="emptyState">Paste a bug report and click <strong>Triage Report</strong> to see the structured card here.</p>
+      </div>
+
+      <!-- Loading state -->
+      <div id="loadingState" class="state-card state-loading" role="status" aria-label="Analysing report…" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <p data-i18n="loadingState">Analysing report…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="errorState" class="state-card state-error" role="alert" hidden>
+        <span class="state-icon" aria-hidden="true">⚠️</span>
+        <p id="errorMessage" data-i18n="errorFallback">Something went wrong.</p>
+      </div>
+
+      <!-- ======= RESULT CARD (populated by JS) ======= -->
+      <article id="resultCard" class="result-card" hidden aria-labelledby="cardTitle">
+
+        <!-- TOP STRIP: severity badge | category | score | dup chip -->
+        <div class="card-top-strip">
+          <span id="severityBadge" class="severity-badge" aria-label="Severity"></span>
+          <span id="categoryBadge" class="category-badge" aria-label="Category"></span>
+          <span id="cardScore"     class="card-score"     aria-label="Score"></span>
+          <!-- Duplicate chip (inline, hidden until needed) -->
+          <span id="dupChip" class="dup-chip" role="alert" hidden>
+            ⚠️ <span data-i18n="dupWarning">Possible Duplicate</span>
+            <span id="dupChipDetail"></span>
+          </span>
+        </div>
+
+        <!-- Bug title -->
+        <h3 id="cardTitle" class="card-title"></h3>
+
+        <!-- Full duplicate "not saved" banner (shown when duplicate detected) -->
+        <div id="dupNotSavedBanner" class="dup-not-saved-banner" role="alert" aria-live="assertive" hidden>
+          <div class="dup-banner-header">
+            <span class="dup-banner-icon" aria-hidden="true">🚫</span>
+            <strong id="dupBannerText" data-i18n="dupNotSaved">Duplicate detected — not saved to history.</strong>
+          </div>
+          <p class="dup-banner-body">
+            <span id="dupBannerDetail"></span>
+            <button id="dupBannerOrigLink"
+              class="dup-orig-link"
+              type="button"
+              aria-label="View original report"
+            ></button>
+          </p>
+          <p class="dup-banner-id">
+            <span id="dupBannerId"></span>
+          </p>
+        </div>
+
+        <!-- Legacy hidden element kept for JS compat -->
+        <div id="duplicateWarning" hidden></div>
+
+        <!-- MID GRID: Missing Info | Next Actions -->
+        <div class="card-mid-grid">
+          <!-- Missing info col -->
+          <div id="missingCol" class="card-mid-col alert-missing" hidden>
+            <h4 class="section-heading" data-i18n="missingHeading">⚠️ Missing Info</h4>
+            <ul id="missingList" class="info-list" aria-label="Missing information"></ul>
+          </div>
+
+          <!-- Next actions col -->
+          <div class="card-mid-col">
+            <h4 class="section-heading" data-i18n="actionsHeading">Suggested Next Actions</h4>
+            <ol id="actionsList" class="actions-list"></ol>
+          </div>
+        </div>
+
+        <!-- COLLAPSIBLE: Parsed Details (closed by default) -->
+        <details class="card-details" id="parsedDetails">
+          <summary>
+            <span aria-hidden="true">🔍</span>
+            <span data-i18n="parsedHeading">Parsed Details</span>
+          </summary>
+          <dl id="parsedFields" class="parsed-list"></dl>
+        </details>
+
+        <!-- COLLAPSIBLE: Agent Reasoning (closed by default) -->
+        <details class="card-details" id="reasoningDetails">
+          <summary>
+            <span aria-hidden="true">🤖</span>
+            <span data-i18n="reasoningHeading">Agent Reasoning</span>
+          </summary>
+          <div id="reasoningContent" class="reasoning-body"></div>
+        </details>
+
+        <!-- Card footer actions -->
+        <footer class="card-footer">
+          <button id="copyMdBtn" class="btn btn-secondary" aria-label="Copy triage card as Markdown">
+            📋 <span data-i18n="copyMdBtn">Copy as Markdown</span>
+          </button>
+          <button id="exportJsonBtn" class="btn btn-secondary" aria-label="Export triage card as JSON">
+            📦 <span data-i18n="exportJsonBtn">Export JSON</span>
+          </button>
+        </footer>
+      </article>
+    </section>
+
+  </main>
+
+  <!-- ===== HISTORY ===== -->
+  <section class="history-section" aria-labelledby="historyHeading">
+    <div class="history-header">
+      <h2 id="historyHeading" class="panel-heading" data-i18n="historyHeading">Triage History</h2>
+      <div class="history-controls">
+        <label for="searchHistory" class="sr-only" data-i18n="searchLabel">Search history</label>
+        <input
+          id="searchHistory"
+          type="search"
+          class="search-input"
+          aria-label="Search triage history"
+          data-i18n-placeholder="searchPlaceholder"
+        />
+        <label for="filterSeverity" class="sr-only" data-i18n="filterLabel">Filter by severity</label>
+        <select id="filterSeverity" class="filter-select" aria-label="Filter by severity">
+          <option value=""        data-i18n="filterAll">All Severities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <button id="clearHistoryBtn" class="btn btn-danger btn-sm" data-i18n="clearHistoryBtn">
+          Clear All
+        </button>
+      </div>
+    </div>
+    <div id="historyEmpty" class="history-empty" role="status" data-i18n="historyEmpty">
+      No history yet. Triage your first report!
+    </div>
+    <ul id="historyList" class="history-list" role="list" aria-label="Triage history"></ul>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer" role="contentinfo">
+    <p data-i18n="footerNote">TriageMate — fully client-side, no data leaves your browser.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
