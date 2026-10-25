@@ -25,11 +25,7 @@ TriageMate takes a raw, messy bug report and produces a structured triage card: 
 
 ## ⚡ Quick Start
 
-1. Clone the repo: `git clone https://github.com/<username>/hacktiv8-triagemate-bug-triage-agent.git`
-2. Open `index.html` in your browser.
-3. Paste a bug report or click a sample, then press **Triage Report**.
-
-No install, no build, no server needed.
+Click here : https://shookys403.github.io/hacktiv8-triagemate-bug-triage-agent/
 
 ## 🧪 Try It: Quick Test Cases
 
@@ -85,20 +81,6 @@ The prompt uses 6 layers: **Role → Context & Goal → Technical Constraints �
 3. Bilingual EN/ID support, including Indonesian agent keywords
 4. Duplicates are no longer saved to history
 5. Bug fix: Missing Info and Next Actions now switch language correctly
-
-## 🔒 Security Notes
-
-- No `innerHTML` with user input (XSS-safe rendering).
-- No network requests; data stays in your browser's `localStorage`.
-
-## 🗺️ Roadmap
-
-- [ ] Delete confirmation, temporary undo, soft delete, auto backup, JSON import
-- [ ] Authentication and roles (QA, developer, admin) with audit trail, once a backend exists
-- [ ] Jira, GitHub Issues, and Slack integrations
-- [ ] Bug trend analytics and auto-assignment
-- [ ] Semantic duplicate detection with embeddings
-- [ ] More languages
 
 ## ⚠️ Limitations
 
