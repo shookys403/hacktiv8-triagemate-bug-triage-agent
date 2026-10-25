@@ -27,17 +27,80 @@ TriageMate takes a raw, messy bug report and produces a structured triage card: 
 
 Click here : https://shookys403.github.io/hacktiv8-triagemate-bug-triage-agent/
 
-## 🧪 Try It: Quick Test Cases
+## 🧪 Try It: Test Inputs
 
-| # | What to do | What you should see |
-|---|---|---|
-| 1 | Click the **Critical - Security** sample, then press Triage | Critical badge, Security category, matched signals in Agent Reasoning |
-| 2 | Click the **Low - UI** sample, then press Triage | Low badge, UI category |
-| 3 | Paste `aplikasinya error terus` and press Triage | Missing info list and a suggestion to ask the reporter for more details |
-| 4 | Press Triage again on the same text | "Duplicate detected, not saved to history" with similarity % and a link to the original |
-| 5 | Switch **EN / ID** in the header | Missing Info and Next Actions items change language instantly |
-| 6 | Press Triage on an empty box | A validation message appears, nothing is saved |
-| 7 | Click **Copy as Markdown** or **Export JSON** | The triage result is copied or downloaded |
+Copy any input below into the **Paste Bug Report** box and press **Triage Report**. Do them in order, because tests 4 and 5 depend on test 1 being saved in History.
+
+> Tip: the sample buttons (**Critical - Security**, **Medium - Performance**, **Low - UI**, **Medium - Login (Indonesian)**) load ready-made reports in one click.
+
+### 1. Critical security bug (full report)
+```
+Title: Login bypass possible
+Steps: 1. Open /login 2. Enter ' OR 1=1 -- in password 3. Click Login
+Expected: Error message
+Actual: Logged in as admin, all user data exposed
+Environment: Windows 11, Chrome 120, v2.4.1
+```
+**Expect:** Critical badge, Security category, matched signals in Agent Reasoning, no missing info.
+
+### 2. Low severity UI bug
+```
+Title: Button text slightly misaligned
+Steps: 1. Open Settings page
+Expected: Text centered
+Actual: Text is 2px off to the left
+Environment: macOS, Safari 17
+```
+**Expect:** Low badge, UI category.
+
+### 3. Vague report (Indonesian)
+```
+aplikasinya error terus
+```
+**Expect:** Missing info list (steps, expected/actual result, environment, version) and a suggestion to ask the reporter for more details.
+
+### 4. Duplicate detection
+First triage test 1, then paste this (or simply submit test 1 again):
+```
+Login bypass is possible: entering ' OR 1=1 -- in the password field logs in as admin and exposes user data.
+```
+**Expect:** "Duplicate detected, not saved to history", a similarity %, and a link to the original report. The History count stays the same.
+
+### 5. Not a duplicate
+After test 1, triage test 2.
+
+**Expect:** No duplicate warning, and the report is saved to History.
+
+### 6. Full Indonesian report
+```
+Judul: Gagal login setelah update
+Langkah: 1. Buka halaman login 2. Masukkan email dan password yang benar 3. Klik Masuk
+Hasil yang diharapkan: Berhasil masuk ke dashboard
+Hasil aktual: Muncul pesan error dan tidak bisa login
+Lingkungan: Android 14, Chrome 120, versi 3.1.0
+```
+**Expect:** Fields are parsed correctly from the Indonesian labels, and severity and category are detected.
+
+### 7. Performance bug
+```
+Title: Dashboard very slow to load
+Steps: 1. Log in 2. Open Dashboard with more than 1000 records
+Expected: Loads in under 2 seconds
+Actual: Takes about 30 seconds and the browser freezes
+Environment: Windows 10, Firefox 121, v1.8.0
+```
+**Expect:** Performance category, Medium or High severity.
+
+### 8. Edge cases
+| Input | Expect |
+|---|---|
+| Empty box, or only spaces/new lines | Validation message, nothing saved |
+| `<script>alert('xss')</script> app crashes when I open the page` | Shown as plain text, no alert pops up |
+| Paste text longer than 20,000 characters | A clear limit message, no freeze |
+
+### 9. Language and export
+After any triage result: switch **EN / ID** in the header (Missing Info and Next Actions change language instantly), then click **Copy as Markdown** or **Export JSON**.
+
 
 ## ✨ Features
 
