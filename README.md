@@ -85,7 +85,3 @@ The prompt uses 6 layers: **Role → Context & Goal → Technical Constraints �
 ## ⚠️ Limitations
 
 The agent is rule-based, not a language model, so accuracy depends on its keyword lists. Data is stored per browser and is not shared across devices.
-
-## 📄 License
-
-MIT License
